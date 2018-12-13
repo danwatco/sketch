@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include "display.h"
 
 enum OPCODE {DX, DY, FF, PEN};
 
