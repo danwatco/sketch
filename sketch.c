@@ -3,8 +3,18 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "display.h"
+#include <stdbool.h>
 
 enum OPCODE {DX, DY, FF, PEN};
+
+struct state {
+    display *d;
+    int xpos;
+    int ypos;
+    int dx;
+    bool pen;
+};
+typedef struct state state;
 
 int getOpcode(unsigned char byte){
     return (byte & 0xC0) >> 6;
