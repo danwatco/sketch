@@ -6,6 +6,7 @@
 #include <stdbool.h>
 
 enum OPCODE {DX, DY, PR, DO};
+enum DO {PEN, DT, CLEAR, KEY, COL};
 
 struct state {
     display *d;
@@ -45,8 +46,7 @@ void finish(state *s){
 void handleX(state *s, unsigned char byte){
     if(s->opinit){
         int value = s->operandval;
-        int newdx = ((unsigned)(value) << 6) | getOperand(byte);
-        s->dx = ((unsigned)(value) << 6) | getOperand(byte);
+        s->dx = ((unsigned)(value) << 6) | (byte & 0x3F);
         s->operandval = 0;
         s->opinit = false;
     } else {
@@ -58,7 +58,7 @@ void handleX(state *s, unsigned char byte){
 
 void handleY(state *s, unsigned char byte){
     if(s->opinit){
-        int value = ((unsigned)(s->operandval) << 6) | getOperand(byte);
+        int value = ((unsigned)(s->operandval) << 6) | (byte & 0x3F);
         if(s->pen){
             display *d = s->d;
             line(d, s->xpos, s->ypos, s->xpos + s->dx, s->ypos + value);
@@ -92,15 +92,55 @@ void handlePR(state *s, unsigned char byte){
         value = getOperand(byte);
         s->operandval = value;
     } else {
-        value = getOperand(byte);
+        value = byte & 0x3F;
         s->operandval = (s->operandval << 6) | value;
+    }
+}
+
+void handleDT(state *s, unsigned char byte){
+    display *d = s->d;
+    if(s->opinit){
+        int value = s->operandval;
+        printf("Pause val %d\n", value);
+        pause(d, value);
+        s->operandval = 0;
+        s->opinit = false;
+    } else {
+        int value = getOperand(byte);
+        if(value == 0){
+            pause(d, s->dt);
+        } else {
+            pause(d, value);
+            s->dt = value;
+        }
+    }
+}
+
+void handleCOL(state *s, unsigned char byte){
+    if(s->opinit){
+        int value = s->operandval;
+        colour(s->d, value);
+        s->operandval = 0;
+        s->opinit = false;
     }
 }
 
 void handleDO(state *s, unsigned char byte){
     switch(getOperand(byte)){
-        case 0:
+        case PEN:
             s->pen = ! (s->pen);
+            break;
+        case DT:
+            handleDT(s, byte);
+            break;
+        case CLEAR:
+            clear(s->d);
+            break;
+        case KEY:
+            key(s->d);
+            break;
+        case COL:
+            handleCOL(s, byte);
             break;
     }
 }
