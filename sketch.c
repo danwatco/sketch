@@ -56,6 +56,12 @@ void handleX(state *s, unsigned char byte){
     
 }
 
+void updatePos(state *s, int yval){
+    s->xpos = s->xpos + s->dx;
+    s->dx = 0;
+    s->ypos = s->ypos + yval;
+}
+
 void handleY(state *s, unsigned char byte){
     if(s->opinit){
         int value = ((unsigned)(s->operandval) << 6) | (byte & 0x3F);
@@ -63,9 +69,7 @@ void handleY(state *s, unsigned char byte){
             display *d = s->d;
             line(d, s->xpos, s->ypos, s->xpos + s->dx, s->ypos + value);
         }
-        s->xpos = s->xpos + s->dx;
-        s->dx = 0;
-        s->ypos = s->ypos + value;
+        updatePos(s, value);
         s->operandval = 0;
         s->opinit = false;
     } else {
@@ -73,13 +77,9 @@ void handleY(state *s, unsigned char byte){
         if(s->pen){
             display *d = s->d;
             line(d, s->xpos, s->ypos, s->xpos + s->dx, s->ypos + value);
-            s->xpos = s->xpos + s->dx;
-            s->dx = 0;
-            s->ypos = s->ypos + value;
+            updatePos(s, value);
         } else {
-            s->xpos = s->xpos + s->dx;
-            s->dx = 0;
-            s->ypos = s->ypos + value;
+            updatePos(s, value);
         }
     }
     
@@ -105,8 +105,7 @@ void handleDT(state *s, unsigned char byte){
         else {
             pause(d, value);
             s->dt = value;
-        }      
-        
+        }
         s->operandval = 0;
         s->opinit = false;
     } else {
