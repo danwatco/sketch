@@ -45,12 +45,8 @@ void finish(state *s){
 void handleX(state *s, unsigned char byte){
     if(s->opinit){
         int value = s->operandval;
-        if(value < 0){
-            unsigned char temp = value;
-            int val = (temp << 6) | getOperand(byte);
-            
-        }
-        s->dx = (value << 6) | getOperand(byte);
+        int newdx = ((unsigned)(value) << 6) | getOperand(byte);
+        s->dx = ((unsigned)(value) << 6) | getOperand(byte);
         s->operandval = 0;
         s->opinit = false;
     } else {
@@ -62,7 +58,7 @@ void handleX(state *s, unsigned char byte){
 
 void handleY(state *s, unsigned char byte){
     if(s->opinit){
-        int value = (s->operandval << 6) | getOperand(byte);
+        int value = ((unsigned)(s->operandval) << 6) | getOperand(byte);
         if(s->pen){
             display *d = s->d;
             line(d, s->xpos, s->ypos, s->xpos + s->dx, s->ypos + value);
