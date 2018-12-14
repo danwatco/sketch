@@ -45,6 +45,11 @@ void finish(state *s){
 void handleX(state *s, unsigned char byte){
     if(s->opinit){
         int value = s->operandval;
+        if(value < 0){
+            unsigned char temp = value;
+            int val = (temp << 6) | getOperand(byte);
+            
+        }
         s->dx = (value << 6) | getOperand(byte);
         s->operandval = 0;
         s->opinit = false;
