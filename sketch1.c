@@ -56,6 +56,10 @@ void handleY(state *s, unsigned char byte){
     }
 }
 
+void handleDO(s, byte){
+
+}
+
 void update(state *s, FILE *in){
     unsigned char byte = fgetc(in);
     switch(getOpcode(byte)){
@@ -66,6 +70,7 @@ void update(state *s, FILE *in){
             handleY(s, byte);
             break;
         case PEN:
+            printf("Pen\n");
             s->pen = ! (s->pen);
             break;
     }
