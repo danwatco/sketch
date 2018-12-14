@@ -54,7 +54,16 @@ void handleX(state *s, unsigned char byte){
 
 void handleY(state *s, unsigned char byte){
     if(s->opinit){
-        
+        int value = (s->operandval << 6) | getOperand(byte);
+        if(s->pen){
+            display *d = s->d;
+            line(d, s->xpos, s->ypos, s->xpos + s->dx, s->ypos + value);
+        }
+        s->xpos = s->xpos + s->dx;
+        s->dx = 0;
+        s->ypos = s->ypos + value;
+        s->operandval = 0;
+        s->opinit = false;
     } else {
         int value = getOperand(byte);
         if(s->pen){
