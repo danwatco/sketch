@@ -24,7 +24,10 @@ int getOpcode(unsigned char byte){
 }
 
 int getOperand(unsigned char byte){
-    return (signed char) ((byte & 0x3F) << 2 )>> 2;
+    int value = byte & 0x3F;
+    if((value & 0x20) != 0 ) value = (~0U << 6) | value;
+    //return (signed char) ((byte & 0x3F) << 2 )>> 2;
+    return value;
 }
 
 state *initalise(char *path){
@@ -38,7 +41,6 @@ void finish(state *s){
     end(s->d);
     free(s);
 }
-
 void handleX(state *s, unsigned char byte){
     if(s->opinit){
         int value = s->operandval;
