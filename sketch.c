@@ -20,17 +20,19 @@ struct state {
 };
 typedef struct state state;
 
+// Using right shift to extract the opcode
 int getOpcode(unsigned char byte){
     return (byte & 0xC0) >> 6;
 }
 
+// Using masking and sign extension
 int getOperand(unsigned char byte){
     int value = byte & 0x3F;
     if((value & 0x20) != 0 ) value = (~0U << 6) | value;
-    //return (signed char) ((byte & 0x3F) << 2 )>> 2;
     return value;
 }
 
+// Create a new drawing state
 state *initalise(char *path){
     display *d = newDisplay(path, 300, 300);
     state *s = malloc(sizeof(state));
@@ -38,24 +40,30 @@ state *initalise(char *path){
     return s;
 }
 
+// End display and free state
 void finish(state *s){
     end(s->d);
     free(s);
 }
 
-void handleX(state *s, unsigned char byte){
+void handleX(state *s, unsigned char byte){ 
     if(s->opinit){
+        // Puts current operand under construction into dx 
+        // plus new operand
         int value = s->operandval;
         s->dx = ((unsigned)(value) << 6) | (byte & 0x3F);
         s->operandval = 0;
         s->opinit = false;
     } else {
+        // Takes operand and put into dx
         int value = getOperand(byte);
         s->dx = value;
     }
     
 }
 
+// Function to update current state with new posisitons, 
+// used to reduce repitition
 void updatePos(state *s, int yval){
     s->xpos = s->xpos + s->dx;
     s->dx = 0;
@@ -64,6 +72,8 @@ void updatePos(state *s, int yval){
 
 void handleY(state *s, unsigned char byte){
     if(s->opinit){
+        // Uses current operand under contsruction plus new operand to 
+        // create y value. Draws line if pen is down.
         int value = ((unsigned)(s->operandval) << 6) | (byte & 0x3F);
         if(s->pen){
             display *d = s->d;
@@ -73,6 +83,7 @@ void handleY(state *s, unsigned char byte){
         s->operandval = 0;
         s->opinit = false;
     } else {
+        // Takes operand and draws if pen is down.
         int value = getOperand(byte);
         if(s->pen){
             display *d = s->d;
@@ -85,6 +96,7 @@ void handleY(state *s, unsigned char byte){
     
 }
 
+// Handles prefix operations using a initalizer variable
 void handlePR(state *s, unsigned char byte){
     if(!s->opinit){
         int value = 0;
@@ -97,6 +109,7 @@ void handlePR(state *s, unsigned char byte){
     }
 }
 
+// Handles pausing using prefixes
 void handleDT(state *s, unsigned char byte){
     display *d = s->d;
     if(s->opinit){
@@ -113,6 +126,7 @@ void handleDT(state *s, unsigned char byte){
     }
 }
 
+// Handles pen colour change using prefixes
 void handleCOL(state *s, unsigned char byte){
     if(s->opinit){
         int value = s->operandval;
@@ -122,6 +136,7 @@ void handleCOL(state *s, unsigned char byte){
     }
 }
 
+// Handles opcode 3 (DO) switches over enum for readability
 void handleDO(state *s, unsigned char byte){
     switch(getOperand(byte)){
         case PEN:
@@ -142,6 +157,8 @@ void handleDO(state *s, unsigned char byte){
     }
 }
 
+// Updates the state with a new byte from a file
+// Switch statement used over the op codes for readability
 void update(state *s, FILE *in){
     unsigned char byte = fgetc(in);
     switch(getOpcode(byte)){
@@ -160,6 +177,7 @@ void update(state *s, FILE *in){
     }
 }
 
+// Creates new state and opens and closes file when finsihed.
 void run(char *path){
     state *s = initalise(path);
     FILE *in = fopen(path, "r");
