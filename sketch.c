@@ -41,6 +41,7 @@ void finish(state *s){
     end(s->d);
     free(s);
 }
+
 void handleX(state *s, unsigned char byte){
     if(s->opinit){
         int value = s->operandval;
