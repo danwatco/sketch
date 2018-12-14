@@ -86,13 +86,13 @@ void handleY(state *s, unsigned char byte){
 }
 
 void handlePR(state *s, unsigned char byte){
-    int value = 0;
     if(!s->opinit){
+        int value = 0;
         s->opinit = true;
         value = getOperand(byte);
         s->operandval = value;
     } else {
-        value = byte & 0x3F;
+        unsigned int value = byte & 0x3F;
         s->operandval = (s->operandval << 6) | value;
     }
 }
@@ -101,18 +101,16 @@ void handleDT(state *s, unsigned char byte){
     display *d = s->d;
     if(s->opinit){
         int value = s->operandval;
-        printf("Pause val %d\n", value);
-        pause(d, value);
+        if(value == 0) pause(d, s->dt);
+        else {
+            pause(d, value);
+            s->dt = value;
+        }      
+        
         s->operandval = 0;
         s->opinit = false;
     } else {
-        int value = getOperand(byte);
-        if(value == 0){
-            pause(d, s->dt);
-        } else {
-            pause(d, value);
-            s->dt = value;
-        }
+        pause(d, s->dt);
     }
 }
 
