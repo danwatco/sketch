@@ -56,10 +56,6 @@ void handleY(state *s, unsigned char byte){
     }
 }
 
-void handleDO(s, byte){
-
-}
-
 void update(state *s, FILE *in){
     unsigned char byte = fgetc(in);
     switch(getOpcode(byte)){
